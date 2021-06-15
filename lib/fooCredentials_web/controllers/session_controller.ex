@@ -12,14 +12,20 @@ defmodule FooCredentialsWeb.SessionController do
             {:ok, user} ->
                 conn
                 |> put_flash(:info, "welcome back!")
-                |> put_session (:user_id, user.id)
-                |> configure_session(renew, true)
+                |> put_session(:user_id, user.id)
+                |> configure_session(renew: true)
                 |> redirect(to: "/")
-                
+
             {:error, :unauthorized} ->
                 conn
                 |> put_flash(:error, "Bad email/password")
-                |> redirect(to: session_path(conn, :new))
+                |> redirect(to: Routes.session_path(conn, :new))
         end
+    end
+
+    def delete(conn, _) do
+        conn
+        |> configure_session(drop: true)
+        |> redirect(to: "/")
     end
 end

@@ -20,7 +20,14 @@ defmodule FooCredentialsWeb.Router do
 
     resources "/users", UserController
 
-    resources "/sessions", SessionController, only: [:new, :create, :delete] singleton: true
+    resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
+    
+  end
+
+  scope "/cms", FooCredentialsWeb.CMS, as: :cms do
+    pipe_through :browser
+
+    resources "/pages", PageController
   end
 
   # Other scopes may use custom stacks.
@@ -41,6 +48,18 @@ defmodule FooCredentialsWeb.Router do
     scope "/" do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: FooCredentialsWeb.Telemetry
+    end
+  end
+
+  def authenticate_user(conn, _) do
+    case get_session(conn, :user_id) do
+      nil ->
+        conn
+        |> Phoenix.Controller.put_flash(:error, "Login Required")
+        |> Phoenix.Controller.redirect(to: "/")
+        |> halt()
+      user_id ->
+        assign(conn, :current_user, FooCredentials.Accounts.get_user!(user_id))
     end
   end
 end
